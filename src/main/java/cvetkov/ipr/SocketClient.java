@@ -1,5 +1,8 @@
 package cvetkov.ipr;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -9,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class SocketClient {
+    private static final Logger log = LoggerFactory.getLogger(SocketClient.class);
     public static void main(String[] args) {
         int numberOfClients = 5;
         ExecutorService executor = Executors.newFixedThreadPool(numberOfClients);
@@ -35,22 +39,22 @@ public class SocketClient {
         try (Socket socket = new Socket("localhost", 8090);
              PrintWriter outputStream = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            System.out.printf("Client %d: connected to server%n", clientId);
+            log.info("Client {}: connected to server", clientId);
 
             for (int idx = 0; idx < 3; idx++) {
-                String msg = String.format("##%d - I Belive (Client %d)", idx, clientId);
-                System.out.printf("Client %d: sending to server%n", clientId, msg);
+                String msg = String.format("## %d (Client %d response) -I Belive", idx, clientId);
+                log.info(msg);
                 outputStream.println(msg);
 
                 String response = inputStream.readLine();
-                System.out.printf("Client %d: server response: %s%n", clientId, response);
+                log.info("Client {}: server response: {}", clientId, response);
                 Thread.sleep(TimeUnit.SECONDS.toMillis(2));
             }
 
-            System.out.printf("Client %d: stopping communication%n", clientId);
+            log.info("Client {}: stopped communication", clientId);
             outputStream.println("stop");
         } catch (Exception ex) {
-            System.err.printf("Client %d: error occurred: %s%n", clientId, ex);
+            log.info("Client {}: error occurred: {}", clientId, ex.getMessage());
             ex.printStackTrace();
         }
 

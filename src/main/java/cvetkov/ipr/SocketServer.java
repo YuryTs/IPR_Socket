@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class SocketServer {
-    private static final Logger logger = LoggerFactory.getLogger(SocketServer.class);
+    private static final Logger log = LoggerFactory.getLogger(SocketServer.class);
     private static final int PORT = 8090;
     private static final int THREAD_POOL_SIZE = 5;
 
@@ -23,8 +23,8 @@ public class SocketServer {
 
     public static void main(String[] args) {
         SocketServer server = new SocketServer();
+
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Shutting down server...");
             server.shutdown();
         }));
         server.go();
@@ -32,15 +32,15 @@ public class SocketServer {
 
     private void go() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            logger.info("Server started on port {}", PORT);
+            log.info("Server started on port {}", PORT);
             while (!Thread.currentThread().isInterrupted()) {
-                logger.info("Waiting for client connection");
+                log.info("Waiting for client connection");
                 Socket clientSocket = serverSocket.accept();
-                logger.info("client connected {}", clientSocket.getRemoteSocketAddress());
+                log.info("client connected {}", clientSocket.getRemoteSocketAddress());
                 executorService.submit(() -> handleClientConnection(clientSocket));
             }
         } catch (IOException ex) {
-            logger.error("Server error", ex);
+            log.error("Server error", ex);
         }
     }
     private void handleClientConnection(Socket clientSocket) {
@@ -49,18 +49,18 @@ public class SocketServer {
         ) {
             String request;
             while ((request = inputStream.readLine()) != null && !"stop".equals(request)) {
-                logger.info("from client: {}", request);
-                outputStream.println(request + " I Can Fly!");
+                log.info("from client: {}", request);
+                outputStream.println(request + "-I Can Fly!-");
             }
         } catch (IOException ex) {
-            logger.error("Error handling client connection", ex);
+            log.error("Error handling client connection", ex);
         } finally {
-            logger.info("Client disconnected: {}", clientSocket.getRemoteSocketAddress());
+            log.info("Client disconnected: {}", clientSocket.getRemoteSocketAddress());
         }
     }
 
     private void shutdown() {
-        logger.info("Shutting down server...");
+        log.info("Shutting down server...");
         executorService.shutdown();
         try {
             if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -71,23 +71,5 @@ public class SocketServer {
             Thread.currentThread().interrupt();
         }
     }
-
 }
-//    }
-//        try (ServerSocket serverSocket = new ServerSocket(PORT);
-//             Socket socket = serverSocket.accept();
-//             DataInputStream inputStreamReader = new DataInputStream(socket.getInputStream());
-//             DataOutputStream outputStreamWriter = new DataOutputStream(socket.getOutputStream());
-//        Scanner scanner = new Scanner(System.in))
-//        {
-//            String request = inputStreamReader.readUTF();
-//            while (!request.equals("exit")) {
-//                System.out.println("Client writing: " + request);
-//                outputStreamWriter.writeUTF(scanner.nextLine());
-//                request = inputStreamReader.readUTF();
-//            }
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
 
